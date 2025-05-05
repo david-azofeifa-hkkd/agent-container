@@ -31,6 +31,7 @@ class ConfluenceFetch():
         auth=self.auth
         )
         return json.dumps(json.loads(response.text), sort_keys=True, indent=4, separators=(",", ": "))
+
     def get_titles(self, headers=None) -> dict:
         response = requests.request(
             "GET",

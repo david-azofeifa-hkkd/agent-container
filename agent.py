@@ -8,26 +8,22 @@ from IPython.display import Image, display
 from fetch_confluence import ConfluenceFetch
 import json
 from dotenv import load_dotenv
-from openai import AzureOpenAI
+from langchain_openai import AzureChatOpenAI
 import os
 
 load_dotenv()
 deployment_name = os.environ['COMPLETIONS_MODEL']
-
-api_key = ("OPENAI_API_KEY")
-
 azure_endpoint = os.environ['AZURE_OPENAI_ENDPOINT']
-
+azure_api_key = os.environ['AZURE_OPENAI_API_KEY']
 api_version = os.environ['OPENAI_API_VERSION']
-
 confluence_key = os.environ["CONFLUENCE_API_KEY"]
 confluence_user = os.environ["CONFLUENCE_USERNAME"]
 
-# openai_api_key = os.environ['OPENAI_API_KEY']
-azure_gpt40 = AzureOpenAI(
+azure_gpt40 = AzureChatOpenAI(
     api_version=api_version,
     azure_endpoint=azure_endpoint,
-    api_key=api_key
+    api_key=azure_api_key,
+    azure_deployment=deployment_name
 )
 
 
@@ -39,13 +35,13 @@ def search_confluence(title: str, limit: int = None) -> json:
         title: Substring that can appear in titles of entries
         limit: limit the amount of entries received
     '''
-    title = "title ~ " + title
+    title = f"title ~ {title}"
     cf = ConfluenceFetch(key=confluence_key, usr=confluence_user)
     return cf.general_search(search=title, limit=limit)
 
 tools = [search_confluence]
-llm = ChatOpenAI(model="gpt-4o")
-llm_with_tools = llm.bind_tools(tools)
+# llm = ChatOpenAI(model="gpt-4o")
+llm_with_tools = azure_gpt40.bind_tools(tools)
 
 # System message
 sys_msg = SystemMessage(content="You are a helpful assistant tasked with finding wiki entries called pages within confluence based on given title.")
@@ -72,7 +68,9 @@ builder.add_conditional_edges(
 builder.add_edge("tools", "assistant")
 react_graph = builder.compile()
 
-messages = [HumanMessage(content="Find entries that have titles with the word 'data'")]
-messages = react_graph.invoke({"messages": messages})
-for m in messages['messages']:
-    m.pretty_print()
+if __name__ == "__main__":
+    messages = [HumanMessage(content="Find entries that have titles with the word 'data', limit it to 10")]
+    # messages = [HumanMessage(content="Hi!")]
+    messages = react_graph.invoke({"messages": messages})
+    for m in messages['messages']:
+        m.pretty_print()
