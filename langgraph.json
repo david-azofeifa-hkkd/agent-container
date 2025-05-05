@@ -1,7 +1,7 @@
 {
     "dependencies": ["."],
     "graphs": {
-      "agent": "./agent.py:builder"
+      "confluence_looker": "./confluence_agent.py:builder"
     },
     "env": ".env"
   }

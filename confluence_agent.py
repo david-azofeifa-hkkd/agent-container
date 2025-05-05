@@ -4,7 +4,7 @@ from langgraph.graph import MessagesState
 from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.graph import START, StateGraph
 from langgraph.prebuilt import tools_condition, ToolNode
-from IPython.display import Image, display
+from langsmith import traceable
 from fetch_confluence import ConfluenceFetch
 import json
 from dotenv import load_dotenv
@@ -18,6 +18,7 @@ azure_api_key = os.environ['AZURE_OPENAI_API_KEY']
 api_version = os.environ['OPENAI_API_VERSION']
 confluence_key = os.environ["CONFLUENCE_API_KEY"]
 confluence_user = os.environ["CONFLUENCE_USERNAME"]
+
 
 azure_gpt40 = AzureChatOpenAI(
     api_version=api_version,
@@ -70,7 +71,7 @@ react_graph = builder.compile()
 
 if __name__ == "__main__":
     messages = [HumanMessage(content="Find entries that have titles with the word 'data', limit it to 10")]
-    # messages = [HumanMessage(content="Hi!")]
+    #messages = [HumanMessage(content="Hi!")]
     messages = react_graph.invoke({"messages": messages})
     for m in messages['messages']:
         m.pretty_print()
